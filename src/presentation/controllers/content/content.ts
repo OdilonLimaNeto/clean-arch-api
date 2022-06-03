@@ -1,49 +1,26 @@
-/* eslint-disable no-restricted-syntax */
 import CreateContentUseCase from "../../../domain/usecases/create-content";
-import { MissingParamError } from "../../errors/missing-param-errors";
-import { badRequest, ok, serverError } from "../../helpers/http-helper";
+import { badRequest, ok } from "../../helpers/http-helper";
 import { HttpRequest, HttpResponse } from "../../protocols";
 import Controller from "../../protocols/controller";
+import Validation from "../../protocols/validation";
+import ErrorHandler from "./../../protocols/error-handler";
 
 export class ContentController implements Controller {
-  constructor(private createContentUseCase: CreateContentUseCase) {}
+  constructor(
+    private createContentUseCase: CreateContentUseCase,
+    private validation: Validation,
+    private errorHandler: ErrorHandler
+  ) {}
   async handle(httpRequest: HttpRequest): Promise<HttpResponse> {
     try {
-      const requiredFields = [
-        "title",
-        "description",
-        "thumbnail",
-        "published",
-        "sourceDuration",
-        "sourceSize",
-      ];
-
-      for (const field of requiredFields) {
-        if (!httpRequest.body[field]) {
-          return badRequest(new MissingParamError(field));
-        }
+      const error = this.validation.validate(httpRequest.body);
+      if (error) {
+        return badRequest(error);
       }
-      const {
-        title,
-        description,
-        thumbnail,
-        published,
-        sourceDuration,
-        sourceSize,
-      } = httpRequest.body;
-      const content = await this.createContentUseCase.create({
-        title,
-        description,
-        thumbnail,
-        published,
-        sourceDuration,
-        sourceSize,
-      });
-      console.log("🚀 ~ file: content", JSON.stringify(content, null, 2));
-
+      const content = await this.createContentUseCase.create(httpRequest.body);
       return ok(content);
     } catch (error) {
-      return serverError();
+      return this.errorHandler.handle(error);
     }
   }
 }
