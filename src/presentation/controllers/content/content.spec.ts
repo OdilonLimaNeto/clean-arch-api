@@ -120,7 +120,7 @@ describe("Content Controller", () => {
     expect(httpResponse.body).toEqual(new MissingParamError("sourceDuration"));
   });
 
-  fit("should return 400 if no sourceSize is provided ", async () => {
+  it("should return 400 if no sourceSize is provided ", async () => {
     const { sut } = makeSUT();
     const httpRequest = {
       body: {
@@ -131,12 +131,12 @@ describe("Content Controller", () => {
         sourceDuration: 0,
       },
     };
-    await sut.handle(httpRequest);
+    const httpResponse = await sut.handle(httpRequest);
     expect(httpResponse.statusCode).toBe(400);
     expect(httpResponse.body).toEqual(new MissingParamError("sourceSize"));
   });
 
-  fit("should call CreateContentUseCase with correct values", async () => {
+  it("should call CreateContentUseCase with correct values", async () => {
     const { sut, createContentSTUB } = makeSUT();
     const createSpy = jest.spyOn(createContentSTUB, "create");
     const httpRequest = {
@@ -160,7 +160,7 @@ describe("Content Controller", () => {
     });
   });
 
-  fit("should return 500 if CreateContentUseCase Throws", async () => {
+  it("should return 500 if CreateContentUseCase Throws", async () => {
     const createContentSTUB = makeCreateContent();
     const sut = new ContentController(createContentSTUB);
     const httpRequest = {
@@ -178,7 +178,7 @@ describe("Content Controller", () => {
     expect(httpResponse.body).toEqual(new ServerError());
   });
 
-  fit("should return 200 valid data is provided ", async () => {
+  it("should return 200 valid data is provided ", async () => {
     const { sut } = makeSUT();
     const httpRequest = {
       body: {
