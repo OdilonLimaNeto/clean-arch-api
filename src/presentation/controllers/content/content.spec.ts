@@ -1,10 +1,10 @@
-/* eslint-disable new-cap */
-/* eslint-disable no-promise-executor-return */
+import { HttpResponse } from "presentation/protocols";
+import ErrorHandler from "presentation/protocols/error-handler";
 import Content from "../../../domain/entities/content";
 import CreateContentUseCase from "../../../domain/usecases/create-content";
 import CreateContentDTO from "../../../domain/usecases/dtos/create-content";
-import { MissingParamError } from "../../errors/missing-param-errors";
-import { ServerError } from "../../errors/server-error";
+import { badRequest } from "../../../presentation/helpers/http-helper";
+import Validation from "../../../presentation/protocols/validation";
 import { ContentController } from "./content";
 
 const makeCreateContent = (): CreateContentUseCase => {
@@ -27,101 +27,52 @@ const makeCreateContent = (): CreateContentUseCase => {
 
 type SUTTypes = {
   sut: ContentController;
+  validationSTUB: Validation;
+  errorHandlerSTUB: ErrorHandler;
   createContentSTUB: CreateContentUseCase;
+};
+
+const makeValidation = (): Validation => {
+  class ValidationStub implements Validation {
+    validate(input: any): Error {
+      return null;
+    }
+  }
+  return new ValidationStub();
+};
+
+export const makeErrorHandler = (): ErrorHandler => {
+  class ErrorHandlerStub implements ErrorHandler {
+    handle(error: any): HttpResponse {
+      if (error) return null;
+      else return null;
+    }
+  }
+
+  return new ErrorHandlerStub();
 };
 
 const makeSUT = (): SUTTypes => {
   const createContentSTUB = makeCreateContent();
-  const sut = new ContentController(createContentSTUB);
+  const validationSTUB = makeValidation();
+  const errorHandlerSTUB = makeErrorHandler();
+  const sut = new ContentController(
+    createContentSTUB,
+    validationSTUB,
+    errorHandlerSTUB
+  );
   return {
     sut,
     createContentSTUB,
+    validationSTUB,
+    errorHandlerSTUB,
   };
 };
 
 describe("Content Controller", () => {
-  it("should return 400 if no title is provided", async () => {
-    const { sut } = makeSUT();
-    const httpRequest = {
-      body: {
-        description: "valid_description",
-        thumbnail: "valid_thumbnail",
-        published: true,
-        sourceDuration: 0,
-        sourceSize: 0,
-      },
-    };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError("title"));
-  });
-
-  it("should return 400 if no description is provided ", async () => {
-    const { sut } = makeSUT();
-    const httpRequest = {
-      body: {
-        title: "valid_title",
-        thumbnail: "valid_thumbnail",
-        published: true,
-        sourceDuration: 0,
-        sourceSize: 0,
-      },
-    };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError("description"));
-  });
-
-  it("should return 400 if no thumbnail is provided ", async () => {
-    const { sut } = makeSUT();
-    const httpRequest = {
-      body: {
-        title: "valid_title",
-        description: "valid_description",
-        published: true,
-        sourceDuration: 0,
-        sourceSize: 0,
-      },
-    };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError("thumbnail"));
-  });
-
-  it("should return 400 if no published is provided ", async () => {
-    const { sut } = makeSUT();
-    const httpRequest = {
-      body: {
-        title: "valid_title",
-        description: "valid_description",
-        thumbnail: "valid_thumbnail",
-        sourceDuration: 0,
-        sourceSize: 0,
-      },
-    };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError("published"));
-  });
-
-  it("should return 400 if no sourceDuration is provided ", async () => {
-    const { sut } = makeSUT();
-    const httpRequest = {
-      body: {
-        title: "valid_title",
-        description: "valid_description",
-        thumbnail: "valid_thumbnail",
-        published: true,
-        sourceSize: 0,
-      },
-    };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError("sourceDuration"));
-  });
-
-  it("should return 400 if no sourceSize is provided ", async () => {
-    const { sut } = makeSUT();
+  it("Should return badRequest if validation returns error", async () => {
+    const { sut, validationSTUB } = makeSUT();
+    jest.spyOn(validationSTUB, "validate").mockReturnValue(new Error());
     const httpRequest = {
       body: {
         title: "valid_title",
@@ -129,11 +80,11 @@ describe("Content Controller", () => {
         thumbnail: "valid_thumbnail",
         published: true,
         sourceDuration: 0,
+        sourceSize: 0,
       },
     };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError("sourceSize"));
+    const response = await sut.handle(httpRequest);
+    expect(response).toEqual(badRequest(new Error()));
   });
 
   it("should call CreateContentUseCase with correct values", async () => {
@@ -161,8 +112,14 @@ describe("Content Controller", () => {
   });
 
   it("should return 500 if CreateContentUseCase Throws", async () => {
-    const createContentSTUB = makeCreateContent();
-    const sut = new ContentController(createContentSTUB);
+    const { createContentSTUB, validationSTUB, errorHandlerSTUB } = makeSUT();
+    const sut = new ContentController(
+      createContentSTUB,
+      validationSTUB,
+      errorHandlerSTUB
+    );
+    jest.spyOn(createContentSTUB, "create").mockRejectedValue(new Error());
+    const handlerSpy = jest.spyOn(errorHandlerSTUB, "handle");
     const httpRequest = {
       body: {
         title: "valid_title",
@@ -173,9 +130,8 @@ describe("Content Controller", () => {
         sourceSize: 0,
       },
     };
-    const httpResponse = await sut.handle(httpRequest);
-    expect(httpResponse.statusCode).toBe(500);
-    expect(httpResponse.body).toEqual(new ServerError());
+    await sut.handle(httpRequest);
+    expect(handlerSpy).toHaveBeenCalledWith(new Error());
   });
 
   it("should return 200 valid data is provided ", async () => {
