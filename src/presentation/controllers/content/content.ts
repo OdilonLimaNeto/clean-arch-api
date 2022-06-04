@@ -11,13 +11,13 @@ export class ContentController implements Controller {
     private validation: Validation,
     private errorHandler: ErrorHandler
   ) {}
-  async handle(httpRequest: HttpRequest): Promise<HttpResponse> {
+  async handle({ body }: HttpRequest): Promise<HttpResponse> {
     try {
-      const error = this.validation.validate(httpRequest.body);
+      const error = this.validation.validate(body);
       if (error) {
         return badRequest(error);
       }
-      const content = await this.createContentUseCase.create(httpRequest.body);
+      const content = await this.createContentUseCase.create(body);
       return ok(content);
     } catch (error) {
       return this.errorHandler.handle(error);
