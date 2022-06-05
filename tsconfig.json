@@ -13,7 +13,6 @@
       "src",
       "tests"
     ],
-    "baseUrl": "src",
   },
   "include": [
     "src",

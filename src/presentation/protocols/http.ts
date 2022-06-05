@@ -1,10 +1,10 @@
 type HttpResponse = {
-  statusCode: number;
-  body: any;
-};
+  statusCode: number
+  body: any
+}
 
 type HttpRequest = {
-  body?: any;
-};
+  body?: any
+}
 
-export { HttpResponse, HttpRequest };
+export { HttpResponse, HttpRequest }

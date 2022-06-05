@@ -1,5 +1,5 @@
 type Validation = {
-  validate: (input: any) => Error;
-};
+  validate: (input: any) => Error
+}
 
-export default Validation;
+export default Validation
