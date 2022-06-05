@@ -10,7 +10,7 @@ const config = [
     synchronize: false,
     migrationsRun: false,
     entities: [
-      './src/infra/db/postgres/**/*.entity.ts'
+      './src/infra/db/postgres/**/*-entity.ts'
     ],
     migrations: [
       './src/infra/db/postgres/migrations/*.ts'
