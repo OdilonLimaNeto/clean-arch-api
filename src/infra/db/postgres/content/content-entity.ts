@@ -24,7 +24,7 @@ export default class ContentEntity implements Content {
   @Column()
   published: boolean
 
-  @Column()
+  @Column({ type: 'real' })
   sourceDuration: number
 
   @Column({ type: 'bigint' })
