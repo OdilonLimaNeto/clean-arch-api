@@ -5,8 +5,6 @@ import Content from '../../../../domain/entities/content'
 import CreateContentUseCase from '../../../../domain/usecases/create-content'
 import CreateContentDTO from '../../../../domain/usecases/dtos/create-content'
 
-
-
 export const makeContentEntity = (): Content => ({
   id: 'id',
   title: 'title',
@@ -54,11 +52,23 @@ const makeCreateContentDTO = (): CreateContentDTO => ({
 
 describe('Content Postgres Repository', () => {
   beforeAll(() => MockDate.set(new Date()))
+
   afterAll(() => MockDate.reset())
 
   it('should return an content on success', async () => {
     const { sut } = makeSUT()
     const response = await sut.create(makeCreateContentDTO())
     expect(response).toEqual(makeContentEntity())
+  })
+
+  it('should return 500 if Postgres Repository throws', async () => {
+    const { sut, contentPostgresRepositorySTUB } = makeSUT()
+
+    jest
+      .spyOn(contentPostgresRepositorySTUB, 'create')
+      .mockRejectedValue(new Error())
+
+    const response = sut.create(makeCreateContentDTO())
+    await expect(response).rejects.toThrow(new Error())
   })
 })
