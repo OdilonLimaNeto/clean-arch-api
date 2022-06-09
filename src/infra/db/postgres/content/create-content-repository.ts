@@ -7,6 +7,7 @@ import ContentEntity from "./entities/content-entity";
 export default class CreateContentPostgresRepository implements CreateContentRepository {
   async create(createContentDTO: CreateContentDTO): Promise<Content> {
     const contentEntity = getRepository<ContentEntity>(ContentEntity);
-    return await contentEntity.save(contentEntity.create(createContentDTO));
+    const content = await contentEntity.save(contentEntity.create(createContentDTO));
+    return Object.assign({}, content);
   }
 }
