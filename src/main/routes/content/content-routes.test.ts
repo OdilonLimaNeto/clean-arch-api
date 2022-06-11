@@ -1,7 +1,13 @@
+import MockDate from 'mockdate';
 import request from 'supertest';
 import app from '../../config/app';
 
 describe('Content Routes', () => {
+
+  beforeAll(() => MockDate.set(new Date()))
+
+  afterAll(() => MockDate.reset())
+
   it('Should return an content on success', async () => {
     await request(app)
       .post('/api/content')
