@@ -1,6 +1,8 @@
 export class ServerError extends Error {
-  constructor() {
-    super(`Internal Server Error`)
-    super.name = 'ServerError'
+  constructor(stack: string) {
+    super()
+    this.message = 'Internal Server Error'
+    super.name = 'ServerError',
+      super.stack = stack
   }
 }
