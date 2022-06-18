@@ -2,7 +2,7 @@ import { DbCreateContentUseCase } from "../../../../data/usecases/create-content
 import CreateContentPostgresRepository from "../../../../infra/db/postgres/content/create-content-repository";
 import { ContentController } from "../../../../presentation/controllers/content/content";
 import { ErroHandlerFactory } from "../../errors/error-handler-factory";
-import { makeContentValidation } from "./content-validation/account-validation-factory";
+import { makeContentValidation } from "./content-validation/content-validation-factory";
 
 export const makeContentController = (): ContentController => {
   const errorHandler = new ErroHandlerFactory()
