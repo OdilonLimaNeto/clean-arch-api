@@ -1,7 +1,7 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
+import { adapterRouterExpress } from "../../adapters/express-route-adapter";
+import { makeContentController } from "../../factories/controllers/content/create-content-factory";
 
 export default (router: Router): void => {
-  router.post('/content', (request: Request, response: Response) => {
-    response.json({ ok: 'ok' });
-  })
+  router.post('/content', adapterRouterExpress(makeContentController()))
 }
