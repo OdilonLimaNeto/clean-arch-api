@@ -1,7 +1,7 @@
-import { HttpResponse } from './http'
+import { HttpResponse } from "./http";
 
 type ErrorHandler = {
-  handle: (error: any) => HttpResponse
-}
+  handle: (error: any) => HttpResponse;
+};
 
-export default ErrorHandler
+export default ErrorHandler;
